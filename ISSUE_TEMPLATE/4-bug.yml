@@ -1,0 +1,14 @@
+name: Problème
+description: Quelque chose ne fonctionne pas (outil, prototype, doc)
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Ce qui se passe / ce qui était attendu
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Comment le reproduire

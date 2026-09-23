@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Idée encore floue ou débat ouvert
+    url: https://github.com/calahan-io/hq/discussions
+    about: Les idées à explorer à plusieurs vont dans Discussions ; on ouvre une issue quand il y a quelque chose à faire.

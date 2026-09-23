@@ -1,0 +1,19 @@
+name: Tâche
+description: Quelque chose de concret à faire
+labels: ["type:task"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: À faire
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Critères de fin
+  - type: input
+    id: note
+    attributes:
+      label: Note liée dans le vault
+      placeholder: 30-design/hardware/alimentation.md

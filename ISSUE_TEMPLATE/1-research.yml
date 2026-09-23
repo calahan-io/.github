@@ -1,0 +1,22 @@
+name: Recherche / question
+description: Une question à instruire (techno, composant, marché, faisabilité)
+title: "[Recherche] "
+labels: ["type:research"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: Que cherche-t-on à savoir, et pourquoi ça bloque ou débloque le projet ?
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Terminé quand
+      description: "Ex. : note dans 20-research/ comparant au moins 3 options avec coûts."
+  - type: dropdown
+    id: area
+    attributes:
+      label: Domaine
+      options: [système, matériel, logiciel, business, autre]

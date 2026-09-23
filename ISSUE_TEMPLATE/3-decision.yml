@@ -1,0 +1,23 @@
+name: Décision à prendre
+description: Un choix structurant à instruire puis à consigner en ADR
+title: "[Décision] "
+labels: ["type:decision"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Le choix à faire
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options déjà identifiées
+  - type: input
+    id: deadline
+    attributes:
+      label: À trancher avant
+      description: Quelle étape est bloquée tant que ce n'est pas décidé ?
+  - type: markdown
+    attributes:
+      value: "Astuce : commentez `@claude rédige l'ADR` ou lancez `/adr` en local."
