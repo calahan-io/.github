@@ -1,0 +1,14 @@
+# Workflow réutilisable : règles de dépendance (architecture logicielle MAURR § 1). Un import interdit fait échouer la CI.
+name: regles-dependances
+on:
+  workflow_call:
+jobs:
+  regles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: npm ci
+      - run: npx depcruise . --config .dependency-cruiser.cjs

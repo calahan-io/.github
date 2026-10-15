@@ -1,0 +1,28 @@
+# Workflow réutilisable : installation (paquets @calahan-io lus sur GitHub Packages), tests, durée bornée.
+# Les vérifications requises pour fusionner tournent sur un exécuteur hébergé, toujours disponible, en moins de 10 min ;
+# un job lourd passe `executeur` (sortie de choisir-executeur.yml) et une durée plus longue.
+name: node-ci
+on:
+  workflow_call:
+    inputs:
+      node-version: { type: string, default: '22' }
+      commande-test: { type: string, default: 'npm test' }
+      executeur: { type: string, default: '"ubuntu-latest"' }
+      duree-max: { type: number, default: 10 }
+jobs:
+  test:
+    runs-on: ${{ fromJSON(inputs.executeur) }}
+    timeout-minutes: ${{ inputs.duree-max }}
+    permissions: { contents: read, packages: read }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: '@calahan-io'
+      # Le paquet lu doit accorder l'accès en lecture à ce dépôt (réglages du paquet → « Manage Actions access »).
+      - run: npm ci
+        env: { NODE_AUTH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+      - run: ${{ inputs.commande-test }}

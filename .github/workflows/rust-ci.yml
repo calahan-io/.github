@@ -1,0 +1,23 @@
+# Workflow réutilisable : format, clippy, tests, cargo deny ; compilation des crates embarqués pour leurs cibles.
+name: rust-ci
+on:
+  workflow_call:
+    inputs:
+      cibles: { type: string, default: 'thumbv7em-none-eabihf' }
+      crates-embarques: { type: string, default: '-p maurr-codec' }
+      executeur: { type: string, default: '"ubuntu-latest"' }
+      duree-max: { type: number, default: 15 }
+jobs:
+  test:
+    runs-on: ${{ fromJSON(inputs.executeur) }}
+    timeout-minutes: ${{ inputs.duree-max }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { components: 'rustfmt, clippy', targets: '${{ inputs.cibles }}' }
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked
+      - run: for t in ${{ inputs.cibles }}; do cargo build --release --locked ${{ inputs.crates-embarques }} --target "$t" || exit 1; done
+      - uses: EmbarkStudios/cargo-deny-action@v2
