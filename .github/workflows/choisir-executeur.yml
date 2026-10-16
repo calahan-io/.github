@@ -1,0 +1,42 @@
+# Workflow réutilisable : choisit où lancer un job lourd. Si un exécuteur des tours portant l'étiquette demandée est en
+# ligne, on l'emploie ; sinon on se replie sur un exécuteur hébergé. Les tours sont des PC personnels : elles s'éteignent,
+# et un job qui attend un exécuteur absent bloque 24 h avant d'échouer (LLD § 18.4).
+# Coût : une minute hébergée par appel. Prérequis : application GitHub « aegis-ci » avec la permission d'organisation
+# « Self-hosted runners : read » (secrets AEGIS_CI_APP_ID et AEGIS_CI_CLE_PRIVEE).
+name: choisir-executeur
+on:
+  workflow_call:
+    inputs:
+      etiquette: { type: string, default: 'aegis-lourd' }
+      repli: { type: string, default: '"ubuntu-latest"' }
+    outputs:
+      executeur:
+        description: 'Valeur JSON pour runs-on'
+        value: ${{ jobs.choisir.outputs.executeur }}
+    secrets:
+      AEGIS_CI_APP_ID: { required: true }
+      AEGIS_CI_CLE_PRIVEE: { required: true }
+jobs:
+  choisir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      executeur: ${{ steps.choix.outputs.executeur }}
+    steps:
+      - id: jeton
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.AEGIS_CI_APP_ID }}
+          private-key: ${{ secrets.AEGIS_CI_CLE_PRIVEE }}
+          owner: ${{ github.repository_owner }}
+      - id: choix
+        env:
+          GH_TOKEN: ${{ steps.jeton.outputs.token }}
+          ETIQUETTE: ${{ inputs.etiquette }}
+          REPLI: ${{ inputs.repli }}
+        run: |
+          n=$(gh api "orgs/${GITHUB_REPOSITORY_OWNER}/actions/runners" --paginate \
+                --jq "[.runners[] | select(.status==\"online\" and .busy==false and ([.labels[].name] | index(\"$ETIQUETTE\")))] | length" \
+              | awk '{s+=$1} END {print s+0}')
+          if [ "$n" -gt 0 ]; then echo "executeur=[\"self-hosted\",\"$ETIQUETTE\"]" >> "$GITHUB_OUTPUT"; echo "tour disponible ($n)";
+          else echo "executeur=$REPLI" >> "$GITHUB_OUTPUT"; echo "aucune tour en ligne : repli sur $REPLI"; fi

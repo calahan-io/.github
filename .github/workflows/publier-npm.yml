@@ -1,0 +1,25 @@
+# Workflow réutilisable : publie les paquets d'un espace de travail npm sur GitHub Packages, sur étiquette v*.
+# La version des paquets doit égaler l'étiquette (v0.6.0-alpha.1 → 0.6.0-alpha.1).
+name: publier-npm
+on:
+  workflow_call:
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: { contents: read, packages: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm, registry-url: 'https://npm.pkg.github.com', scope: '@calahan-io' }
+      - run: npm ci
+        env: { NODE_AUTH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+      - run: npm test
+      - run: |
+          attendu="${GITHUB_REF_NAME#v}"
+          for p in $(node -p "require('./package.json').workspaces.join(' ')"); do
+            v=$(node -p "require('./$p/package.json').version")
+            [ "$v" = "$attendu" ] || { echo "$p : version $v ≠ étiquette $attendu"; exit 1; }
+          done
+          npm publish --workspaces --tag "$(case "$attendu" in *-*) echo next;; *) echo latest;; esac)"
+        env: { NODE_AUTH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }

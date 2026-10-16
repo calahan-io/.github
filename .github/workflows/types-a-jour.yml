@@ -1,0 +1,15 @@
+# Workflow réutilisable (dépôt syn) : types générés et vecteurs à jour (régénérer, puis échouer à tout écart).
+name: types-a-jour
+on:
+  workflow_call:
+jobs:
+  types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: npm ci
+      - run: npm run types && npm run vecteurs:bifrost
+      - run: git diff --exit-code -- packages/syn-contrats/src/genere vecteurs
