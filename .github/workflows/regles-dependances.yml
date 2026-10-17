@@ -6,9 +6,13 @@ jobs:
   regles:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions: { contents: read, packages: read }
     steps:
       - uses: actions/checkout@v4
+      # comme node-ci : les paquets @calahan-io se lisent sur GitHub Packages (sans jeton, npm ci échoue en 401 dès qu'un
+      # dépôt dépend de syn) ; le paquet lu doit accorder l'accès en lecture à ce dépôt (« Manage Actions access »)
       - uses: actions/setup-node@v4
-        with: { node-version: '22', cache: npm }
+        with: { node-version: '22', cache: npm, registry-url: 'https://npm.pkg.github.com', scope: '@calahan-io' }
       - run: npm ci
+        env: { NODE_AUTH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
       - run: npx depcruise . --config .dependency-cruiser.cjs
