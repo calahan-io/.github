@@ -5,15 +5,16 @@ Un dépôt qui a son propre dossier `.github/ISSUE_TEMPLATE/` remplace ces valeu
 
 ## Workflows réutilisables
 
-Les sept workflows du kit d'ossature AEGIS vivent ici, dans `.github/workflows/`, et sont appelés par `syn`, `heimdall`,
-`maurr` et `maurr-node` avec `uses: calahan-io/.github/.github/workflows/<nom>.yml@main`. Leur source de vérité reste
+Les sept workflows du kit d'ossature AEGIS vivent ici, dans `.github/workflows/`, et sont appelés par `syn`, `heimdall`
+et `maurr` avec `uses: calahan-io/.github/.github/workflows/<nom>.yml@main`. Leur source de vérité reste
 le gabarit `hq/scripts/amorce/gabarits/org-github/` : on modifie là-bas, puis on recopie ici par PR.
+`maurr-node` n'en appelle aucun : son `ci.yml` reprend en ligne des étapes de `rust-ci.yml` et de `contrats-a-jour.yml`, que personne n'appelle encore.
 
 | Nom | Rôle | Entrées (défaut) |
 |---|---|---|
 | `node-ci.yml` | `npm ci` (paquets `@calahan-io` lus sur GitHub Packages) puis tests, durée bornée | `node-version` (`22`), `commande-test` (`npm test`), `executeur` (`"ubuntu-latest"`), `duree-max` (`10`) |
 | `rust-ci.yml` | `cargo fmt`, `clippy`, `test`, `cargo deny` ; compile les crates embarqués pour leurs cibles | `cibles` (`thumbv7em-none-eabihf`), `crates-embarques` (`-p maurr-codec`), `executeur` (`"ubuntu-latest"`), `duree-max` (`15`) |
-| `regles-dependances.yml` | règles de dépendance (dependency-cruiser, `.dependency-cruiser.cjs`) ; un import interdit fait échouer la CI | — |
+| `regles-dependances.yml` | `npm ci` (paquets `@calahan-io` lus sur GitHub Packages) puis règles de dépendance (dependency-cruiser, `.dependency-cruiser.cjs`) ; un import interdit fait échouer la CI | — |
 | `types-a-jour.yml` | (`syn`) régénère types et vecteurs, échoue au moindre écart | — |
 | `contrats-a-jour.yml` | (consommateurs Rust) la copie `contrats/syn` égale le paquet `@calahan-io/syn-contrats` épinglé dans `contrats/syn/VERSION` | — |
 | `publier-npm.yml` | publie les paquets d'un espace de travail npm sur GitHub Packages, sur étiquette `v*` (la version doit égaler l'étiquette) | — |
