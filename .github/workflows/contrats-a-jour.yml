@@ -1,8 +1,11 @@
 # Workflow réutilisable (consommateurs Rust : maurr-node) : la copie de contrats/syn égale exactement le paquet
 # @calahan-io/syn-contrats de la version épinglée dans contrats/syn/VERSION (ADR 0018, ADR 0023).
+# Entrée node-version (défaut 22) : seul npm pack en dépend ici.
 name: contrats-a-jour
 on:
   workflow_call:
+    inputs:
+      node-version: { type: string, default: '22' }
 jobs:
   contrats:
     runs-on: ubuntu-latest
@@ -11,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '22', registry-url: 'https://npm.pkg.github.com', scope: '@calahan-io' }
+        with: { node-version: '${{ inputs.node-version }}', registry-url: 'https://npm.pkg.github.com', scope: '@calahan-io' }
       - run: |
           v=$(cat contrats/syn/VERSION)
           npm pack "@calahan-io/syn-contrats@$v" --pack-destination "$RUNNER_TEMP"

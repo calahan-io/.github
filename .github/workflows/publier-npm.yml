@@ -1,8 +1,12 @@
 # Workflow réutilisable : publie les paquets d'un espace de travail npm sur GitHub Packages, sur étiquette v*.
 # La version des paquets doit égaler l'étiquette (v0.6.0-alpha.1 → 0.6.0-alpha.1).
+# Entrée node-version (défaut 22) : un dépôt dont les tests exigent Node 24 (rejeu au bit près, hq#42) la passe, sinon npm test
+# tourne sous Node 22 et l'étiquette échoue.
 name: publier-npm
 on:
   workflow_call:
+    inputs:
+      node-version: { type: string, default: '22' }
 jobs:
   publier:
     runs-on: ubuntu-latest
@@ -11,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '22', cache: npm, registry-url: 'https://npm.pkg.github.com', scope: '@calahan-io' }
+        with: { node-version: '${{ inputs.node-version }}', cache: npm, registry-url: 'https://npm.pkg.github.com', scope: '@calahan-io' }
       - run: npm ci
         env: { NODE_AUTH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
       - run: npm test
