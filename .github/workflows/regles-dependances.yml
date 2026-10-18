@@ -1,7 +1,10 @@
 # Workflow réutilisable : règles de dépendance (architecture logicielle MAURR § 1). Un import interdit fait échouer la CI.
+# Entrée node-version (défaut 22) : à passer en 24 par un dépôt dont les paquets exigent Node 24 (hq#42).
 name: regles-dependances
 on:
   workflow_call:
+    inputs:
+      node-version: { type: string, default: '22' }
 jobs:
   regles:
     runs-on: ubuntu-latest
@@ -12,7 +15,7 @@ jobs:
       # comme node-ci : les paquets @calahan-io se lisent sur GitHub Packages (sans jeton, npm ci échoue en 401 dès qu'un
       # dépôt dépend de syn) ; le paquet lu doit accorder l'accès en lecture à ce dépôt (« Manage Actions access »)
       - uses: actions/setup-node@v4
-        with: { node-version: '22', cache: npm, registry-url: 'https://npm.pkg.github.com', scope: '@calahan-io' }
+        with: { node-version: '${{ inputs.node-version }}', cache: npm, registry-url: 'https://npm.pkg.github.com', scope: '@calahan-io' }
       - run: npm ci
         env: { NODE_AUTH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
       - run: npx depcruise . --config .dependency-cruiser.cjs

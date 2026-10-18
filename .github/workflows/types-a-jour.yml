@@ -1,7 +1,10 @@
 # Workflow réutilisable (dépôt syn) : types générés et vecteurs à jour (régénérer, puis échouer à tout écart).
+# Entrée node-version (défaut 22) : la version de Node sous laquelle les générateurs tournent.
 name: types-a-jour
 on:
   workflow_call:
+    inputs:
+      node-version: { type: string, default: '22' }
 jobs:
   types:
     runs-on: ubuntu-latest
@@ -9,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '22', cache: npm }
+        with: { node-version: '${{ inputs.node-version }}', cache: npm }
       - run: npm ci
       - run: npm run types && npm run vecteurs:bifrost
       - run: git diff --exit-code -- packages/syn-contrats/src/genere vecteurs
