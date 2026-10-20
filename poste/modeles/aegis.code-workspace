@@ -1,0 +1,141 @@
+{
+  // Espace de travail VS Code AEGIS, posé à la racine par « aegis install » / « aegis update ».
+  // Source : calahan-io/.github, poste/modeles/aegis.code-workspace. Une modification locale est sauvegardée en .bak
+  // au prochain update : proposez-la plutôt par PR sur .github.
+  "folders": [
+    { "name": "AEGIS-CORP", "path": "." },
+    { "name": "hq", "path": "hq" },
+    { "name": "syn", "path": "syn" },
+    { "name": "heimdall", "path": "heimdall" },
+    { "name": "maurr", "path": "maurr" },
+    { "name": "maurr-node", "path": "maurr-node" },
+    { "name": "mimir", "path": "mimir" },
+    { "name": ".github", "path": ".github" }
+  ],
+  "settings": {
+    "files.eol": "\n",
+    "files.encoding": "utf8",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "editor.tabSize": 2,
+    "editor.rulers": [120],
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/target": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/target": true,
+      "**/*.jsonl": true,
+      "hq/.obsidian": true
+    },
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/target/**": true
+    },
+    "git.autofetch": true,
+    "git.pruneOnFetch": true,
+    "git.openRepositoryInParentFolders": "never",
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+    "terminal.integrated.env.windows": { "PYTHONUTF8": "1" },
+    "rust-analyzer.linkedProjects": ["maurr-node/Cargo.toml"],
+    "markdown.validate.enabled": true,
+    "workbench.startupEditor": "readme",
+    "[powershell]": { "files.eol": "\r\n" }
+  },
+  "extensions": {
+    "recommendations": [
+      "anthropic.claude-code",
+      "editorconfig.editorconfig",
+      "rust-lang.rust-analyzer",
+      "tamasfe.even-better-toml",
+      "redhat.vscode-yaml",
+      "ms-python.python",
+      "zxh404.vscode-proto3",
+      "davidanson.vscode-markdownlint",
+      "bierner.markdown-mermaid",
+      "github.vscode-github-actions",
+      "github.vscode-pull-request-github",
+      "ms-vscode.powershell"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "AEGIS : doctor",
+        "detail": "Diagnostic du poste : outils, clones, atelier, VS Code",
+        "type": "shell",
+        "options": { "cwd": "${workspaceFolder:AEGIS-CORP}" },
+        "windows": { "command": "pwsh -NoProfile -File .github/poste/aegis.ps1 doctor" },
+        "linux": { "command": "bash .github/poste/aegis.sh doctor" },
+        "problemMatcher": []
+      },
+      {
+        "label": "AEGIS : update",
+        "detail": "Met à jour le bootstrap, les clones (main seulement), l'atelier npm et les extensions",
+        "type": "shell",
+        "options": { "cwd": "${workspaceFolder:AEGIS-CORP}" },
+        "windows": { "command": "pwsh -NoProfile -File .github/poste/aegis.ps1 update" },
+        "linux": { "command": "bash .github/poste/aegis.sh update" },
+        "problemMatcher": []
+      },
+      {
+        "label": "AEGIS : update + outils",
+        "detail": "Comme update, et met aussi à niveau les outils (winget / brew, Node reste en 24)",
+        "type": "shell",
+        "options": { "cwd": "${workspaceFolder:AEGIS-CORP}" },
+        "windows": { "command": "pwsh -NoProfile -File .github/poste/aegis.ps1 update --outils" },
+        "linux": { "command": "bash .github/poste/aegis.sh update --outils" },
+        "problemMatcher": []
+      },
+      {
+        "label": "AEGIS : guide",
+        "detail": "Ouvre le kit de démarrage (readme.html servi sur 127.0.0.1:7480) ou le README de la racine",
+        "type": "shell",
+        "options": { "cwd": "${workspaceFolder:AEGIS-CORP}" },
+        "windows": { "command": "pwsh -NoProfile -File .github/poste/aegis.ps1 guide" },
+        "linux": { "command": "bash .github/poste/aegis.sh guide" },
+        "problemMatcher": []
+      },
+      {
+        "label": "heimdall : demo (port 7400)",
+        "type": "shell",
+        "isBackground": true,
+        "options": { "cwd": "${workspaceFolder:heimdall}" },
+        "command": "npm run demo",
+        "problemMatcher": []
+      },
+      {
+        "label": "heimdall : doctor",
+        "type": "shell",
+        "options": { "cwd": "${workspaceFolder:heimdall}" },
+        "command": "npm run doctor",
+        "problemMatcher": []
+      },
+      {
+        "label": "maurr : régression (63,0 attendu)",
+        "type": "shell",
+        "options": { "cwd": "${workspaceFolder:maurr}" },
+        "command": "npm test",
+        "problemMatcher": []
+      },
+      {
+        "label": "maurr-node : cargo test",
+        "type": "shell",
+        "options": { "cwd": "${workspaceFolder:maurr-node}" },
+        "command": "cargo test",
+        "problemMatcher": ["$rustc"]
+      },
+      {
+        "label": "hq : valider le vault",
+        "type": "shell",
+        "options": { "cwd": "${workspaceFolder:hq}" },
+        "windows": { "command": "python -X utf8 scripts/check_vault.py" },
+        "linux": { "command": "python3 -X utf8 scripts/check_vault.py" },
+        "problemMatcher": []
+      }
+    ]
+  }
+}

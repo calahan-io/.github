@@ -1,0 +1,4 @@
+# Fins de ligne : LF partout (les scripts bash du bootstrap cassent en CRLF), CRLF pour PowerShell.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary

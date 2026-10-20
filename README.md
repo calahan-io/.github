@@ -3,6 +3,26 @@
 Fichiers communs à tous les dépôts de l'organisation : modèles d'issues et de PR.
 Un dépôt qui a son propre dossier `.github/ISSUE_TEMPLATE/` remplace ces valeurs par défaut.
 
+## Poste de développement (dépôt d'entrée)
+
+Ce dépôt, public, sert d'entrée à un nouveau poste. [`poste/`](poste/README.md) installe l'atelier standard `AEGIS-CORP` :
+- outils ;
+- sept clones côte à côte ;
+- espace de travail VS Code ;
+- atelier npm ;
+- chaîne Rust ;
+- skills de `mimir`.
+
+Le CLI `aegis` (`install`, `update`, `doctor`, `guide`) tourne sous Windows 11 et sous Bluefin. Sa source de vérité est
+ici, pas dans les gabarits de `hq`.
+
+```powershell
+irm https://raw.githubusercontent.com/calahan-io/.github/main/poste/amorcer.ps1 | iex    # Windows
+```
+```bash
+curl -fsSL https://raw.githubusercontent.com/calahan-io/.github/main/poste/amorcer.sh | bash   # Bluefin / Linux
+```
+
 ## Workflows réutilisables
 
 Les sept workflows du kit d'ossature AEGIS vivent ici, dans `.github/workflows/`, et sont appelés par `syn`, `heimdall`,
