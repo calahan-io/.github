@@ -1,0 +1,71 @@
+# Vérifie le bootstrap du poste (poste/) : syntaxe, cohérence du manifeste, et un vrai passage des outils sous Linux
+# avec Homebrew (le chemin de Bluefin). Les clones des dépôts privés ne sont pas testés ici (pas de jeton) :
+# « aegis install » de bout en bout se vérifie sur un poste.
+name: poste
+on:
+  pull_request:
+    paths: ['poste/**', '.github/workflows/poste.yml']
+  push:
+    branches: [main]
+    paths: ['poste/**', '.github/workflows/poste.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  coherence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck -S warning poste/aegis.sh poste/amorcer.sh
+      - name: manifeste et modèles
+        run: |
+          jq -e '.depots | length == 7' poste/manifeste.json
+          jq -r '.racine.fichiers[].source' poste/manifeste.json | while read -r f; do test -f "poste/$f"; done
+          jq empty poste/modeles/launch.json
+          sed '/^\s*\/\//d' poste/modeles/aegis.code-workspace | jq empty
+          diff <(jq -r '.vscode.extensions[]' poste/manifeste.json | sort) \
+               <(sed '/^\s*\/\//d' poste/modeles/aegis.code-workspace | jq -r '.extensions.recommendations[]' | sort) \
+            || { echo "::error::extensions : manifeste.json et aegis.code-workspace divergent"; exit 1; }
+
+  linux-brew:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Homebrew seul, comme sur Bluefin (on retire le Node de l'image)
+        run: |
+          sudo rm -f /usr/local/bin/node /usr/local/bin/npm /usr/local/bin/npx
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
+      - name: aegis install (outils, rust)
+        run: bash poste/aegis.sh install --non-interactif --racine "$RUNNER_TEMP/aegis" --seulement outils,racine,rust || true
+      - name: aucun outil en erreur
+        run: |
+          bash poste/aegis.sh doctor --json --racine "$RUNNER_TEMP/aegis" > doctor.json || true
+          jq -r '.[] | "\(.statut)\t\(.groupe)\t\(.nom)\t\(.detail)"' doctor.json
+          jq -e '[.[] | select((.groupe == "outils" or .groupe == "rust") and .statut == "erreur")] | length == 0' doctor.json
+          node --version | grep -q '^v24\.'
+          test -f "$RUNNER_TEMP/aegis/aegis.code-workspace"
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: analyse des scripts PowerShell
+        shell: pwsh
+        run: |
+          foreach ($f in 'poste/aegis.ps1', 'poste/amorcer.ps1') {
+            $e = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$null, [ref]$e)
+            if ($e) { $e | ForEach-Object { "::error file=$f,line=$($_.Extent.StartLineNumber)::$($_.Message)" }; exit 1 }
+          }
+      - name: doctor (sortie JSON valide)
+        shell: pwsh
+        run: |
+          $j = pwsh -NoProfile -File poste/aegis.ps1 doctor --json --racine "$env:RUNNER_TEMP\aegis" | ConvertFrom-Json
+          $j | Format-Table statut, groupe, nom, detail -AutoSize | Out-String -Width 200
+          if (-not ($j | Where-Object nom -eq 'Git')) { throw 'doctor ne rend pas l''état des outils' }
+          # doctor sort en 1 ici (pas de clones sur l'exécuteur) : seule la validité du JSON est jugée.
+          exit 0

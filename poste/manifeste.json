@@ -1,0 +1,82 @@
+{
+  "$comment": "Manifeste du poste de développement AEGIS. Lu par aegis.ps1 (Windows) et aegis.sh (Linux, Bluefin). Une seule source : on modifie ici, jamais dans les scripts. Dépôt public : rien de confidentiel.",
+  "version": 1,
+  "org": "calahan-io",
+  "racine_defaut": "AEGIS-CORP",
+  "depots": [
+    { "nom": ".github", "role": "dépôt d'entrée : ce bootstrap, CI réutilisables, modèles, profil public" },
+    { "nom": "hq", "role": "le savoir : vision, conception, décisions, journal (vault Obsidian)" },
+    { "nom": "syn", "role": "les contrats communs (schémas, protobuf BIFROST, vecteurs, paquets npm)" },
+    { "nom": "heimdall", "role": "le C2 (heimdall-core, heimdall-server, heimdall-poste)" },
+    { "nom": "maurr", "role": "le châssis : simulation, banc, STIGMA, BROKR" },
+    { "nom": "maurr-node", "role": "le cerveau Rust, le firmware, BIFROST" },
+    { "nom": "mimir", "role": "le savoir des agents (skills, règles, connaissances)" }
+  ],
+  "clone": {
+    "$comment": "Clones en LF sur tous les systèmes, comme la CI : le nocturne et synchro-contrats échouent sur un clone CRLF.",
+    "config": ["core.autocrlf=false", "core.eol=lf"]
+  },
+  "outils": [
+    { "id": "git", "nom": "Git", "commande": "git", "min": "2.40", "requis": true,
+      "windows": { "winget": "Git.Git" }, "linux": { "brew": "git" } },
+    { "id": "gh", "nom": "GitHub CLI", "commande": "gh", "min": "2.40", "requis": true,
+      "windows": { "winget": "GitHub.cli" }, "linux": { "brew": "gh" } },
+    { "id": "jq", "nom": "jq", "commande": "jq", "min": "1.7", "requis": true,
+      "windows": { "winget": "jqlang.jq" }, "linux": { "brew": "jq" } },
+    { "id": "node", "nom": "Node.js", "commande": "node", "majeur": 24, "requis": true,
+      "$comment": "Node 24 exactement : le rejeu au bit près des vecteurs change entre V8 12 et 13 (hq#42).",
+      "windows": { "winget": "OpenJS.NodeJS" }, "linux": { "brew": "node@24" } },
+    { "id": "python", "nom": "Python", "commande": { "windows": "python", "linux": "python3" }, "min": "3.12", "requis": true,
+      "windows": { "winget": "Python.Python.3.12" }, "linux": { "brew": "python@3.12" } },
+    { "id": "pwsh", "nom": "PowerShell 7", "commande": "pwsh", "min": "7.4", "requis": true,
+      "windows": { "winget": "Microsoft.PowerShell" } },
+    { "id": "code", "nom": "VS Code", "commande": "code", "min": "1.90", "requis": false,
+      "windows": { "winget": "Microsoft.VisualStudioCode" }, "linux": { "conseil": "Bluefin : ujust devmode (image DX, VS Code inclus) ; sinon flatpak install flathub com.visualstudio.code" } },
+    { "id": "cargo", "nom": "Rust (rustup)", "commande": "cargo", "min": "1.85", "requis": true, "profil": "rust",
+      "windows": { "winget": "Rustlang.Rustup" }, "linux": { "rustup": true } },
+    { "id": "cc", "nom": "Éditeur de liens C (pour Rust)", "commande": "cc", "requis": true, "profil": "rust",
+      "linux": { "brew": "gcc", "conseil": "Bluefin : brew install gcc, ou travailler dans une distrobox" } }
+  ],
+  "rust": {
+    "cibles": ["thumbv7em-none-eabihf"],
+    "composants": ["clippy", "rustfmt"],
+    "cargo_install": [ { "crate": "cargo-deny", "commande": "cargo-deny" } ],
+    "windows_build_tools": {
+      "$comment": "L'éditeur de liens MSVC qu'exige la chaîne Rust stable-msvc.",
+      "winget": "Microsoft.VisualStudio.2022.BuildTools",
+      "override": "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+    }
+  },
+  "npm": {
+    "$comment": "Atelier npm à la racine : relie les paquets @calahan-io de syn et heimdall sans registre (heimdall/outils/kit.mjs atelier).",
+    "construire": ["syn", "heimdall"],
+    "ci": ["maurr"]
+  },
+  "vscode": {
+    "extensions": [
+      "anthropic.claude-code",
+      "editorconfig.editorconfig",
+      "rust-lang.rust-analyzer",
+      "tamasfe.even-better-toml",
+      "redhat.vscode-yaml",
+      "ms-python.python",
+      "zxh404.vscode-proto3",
+      "davidanson.vscode-markdownlint",
+      "bierner.markdown-mermaid",
+      "github.vscode-github-actions",
+      "github.vscode-pull-request-github",
+      "ms-vscode.powershell"
+    ]
+  },
+  "racine": {
+    "$comment": "Fichiers posés à la racine de l'atelier depuis poste/modeles (copie ; un fichier modifié à la main est sauvegardé en .bak avant remplacement). Le kit détaillé (kit_source, dans hq, privé) est copié de même vers kit dès que hq est cloné.",
+    "fichiers": [
+      { "source": "modeles/aegis.code-workspace", "cible": "aegis.code-workspace" },
+      { "source": "modeles/LISEZMOI.md", "cible": "README.md" },
+      { "source": "modeles/launch.json", "cible": ".claude/launch.json" }
+    ],
+    "kit": "readme.html",
+    "kit_source": "hq/scripts/poste/readme.html"
+  },
+  "ports": [7400, 7480]
+}

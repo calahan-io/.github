@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "heimdall-demo",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["heimdall/outils/kit.mjs", "demo", "--vitesse", "20"],
+      "port": 7400
+    },
+    {
+      "name": "kit-readme",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "7480", "--bind", "127.0.0.1"],
+      "port": 7480
+    }
+  ]
+}
