@@ -14,8 +14,9 @@ Ensuite, un CLI `aegis` (`install`, `update`, `doctor`, `guide`) le garde à jou
 **Windows 11** et sur **Bluefin** (Fedora Atomic), et devrait marcher sur tout Linux doté de Homebrew.
 
 > Ce dépôt est **public** : rien de confidentiel ici. Les dépôts clonés sont privés : il faut un compte GitHub membre de
-> `calahan-io`. Le kit détaillé `readme.html` (état de la CI, pièges du poste) reste hors Git et n'est servi que s'il est
-> présent à la racine.
+> `calahan-io`. Le kit détaillé (état de la CI, pièges du poste, parcours guidés) vit donc dans `hq`, privé :
+> `hq/scripts/poste/readme.html`. `install` et `update` le copient à la racine en `readme.html` dès que `hq` est cloné.
+> On le modifie dans `hq`, par PR.
 
 ## Démarrer sur un PC neuf
 
@@ -49,7 +50,7 @@ Puis ouvrez `~/AEGIS-CORP/aegis.code-workspace` dans VS Code.
 | `install` | installe ou répare tout, étape par étape, puis lance `doctor`. Idempotent. |
 | `update` | avance les clones posés sur `main` sans modification locale. Les autres branches sont laissées telles quelles et signalées. Repose ensuite les fichiers de la racine, refait l'atelier npm et complète les extensions. Si le bootstrap lui-même a changé, il se relance dans sa nouvelle version. `--outils` met aussi à niveau winget / brew / rustup, Node restant en 24.x. |
 | `doctor` | diagnostic sans modification : outils et versions, `gh`, clones (branche, retard, fins de ligne), racine, atelier, extensions, skills, ports 7400 et 7480. Code de sortie 1 en cas d'erreur ; `--json` pour une sortie machine. |
-| `guide` | sert `readme.html` sur `127.0.0.1:7480` s'il existe, sinon ouvre le `README.md` de la racine. |
+| `guide` | sert le kit `readme.html` (copié depuis `hq/scripts/poste/`) sur `127.0.0.1:7480`, sinon ouvre le `README.md` de la racine. |
 
 Options communes :
 - `--racine <dossier>` ;

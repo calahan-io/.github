@@ -245,11 +245,16 @@ retenir_empreinte() {
   { awk -F'\t' -v k="$1" '$1!=k' "$ETAT/empreintes"; printf '%s\t%s\n' "$1" "$2"; } | sort > "$ETAT/empreintes.tmp"
   mv "$ETAT/empreintes.tmp" "$ETAT/empreintes"
 }
+fichiers_racine() { # → source absolue<TAB>cible, modèles puis kit de hq s'il est cloné
+  m '.racine.fichiers[] | [.source, .cible] | @tsv' | while IFS=$'\t' read -r src cible; do printf '%s\t%s\n' "$ICI/$src" "$cible"; done
+  local kit; kit="$RACINE/$(m .racine.kit_source)"
+  [[ ! -f "$kit" ]] || printf '%s\t%s\n' "$kit" "$(m .racine.kit)"
+}
 install_racine() {
   titre "Racine de l'atelier"
   local src dst cible hs hd connue bak
   while IFS=$'\t' read -r src cible; do
-    src="$ICI/$src"; dst="$RACINE/$cible"; hs="$(empreinte "$src")"
+    dst="$RACINE/$cible"; hs="$(empreinte "$src")"
     if [[ -f "$dst" ]]; then
       hd="$(empreinte "$dst")"; connue="$(empreinte_connue "$cible")"
       if [[ "$hd" == "$hs" ]]; then note ok racine "$cible" 'à jour'; (( SIMULATION )) || retenir_empreinte "$cible" "$hs"; continue; fi
@@ -260,7 +265,7 @@ install_racine() {
     fi
     faire "pose de $cible" install -D -m 0644 "$src" "$dst"
     (( SIMULATION )) || { retenir_empreinte "$cible" "$hs"; note ok racine "$cible" posé; }
-  done < <(m '.racine.fichiers[] | [.source, .cible] | @tsv')
+  done < <(fichiers_racine)
 }
 
 # ------------------------------------------------------------------ npm
@@ -401,9 +406,9 @@ doctor() {
   while IFS=$'\t' read -r src cible; do
     f="$RACINE/$cible"
     if [[ ! -f "$f" ]]; then note avert racine "$cible" absent 'aegis.sh update'
-    elif [[ "$(empreinte "$f")" == "$(empreinte "$ICI/$src")" ]]; then note ok racine "$cible" 'à jour'
+    elif [[ "$(empreinte "$f")" == "$(empreinte "$src")" ]]; then note ok racine "$cible" 'à jour'
     else note avert racine "$cible" 'diffère du modèle' 'aegis.sh update (sauvegarde .bak si modifié à la main)'; fi
-  done < <(m '.racine.fichiers[] | [.source, .cible] | @tsv')
+  done < <(fichiers_racine)
   if [[ -f "$RACINE/package.json" ]]; then note ok npm "package.json d'atelier"; else note avert npm "package.json d'atelier" absent; fi
   if [[ -d "$RACINE/node_modules" ]]; then note ok npm "node_modules d'atelier"; else note avert npm "node_modules d'atelier" absent; fi
   while IFS= read -r x; do
@@ -414,7 +419,7 @@ doctor() {
     if [[ -d "$RACINE/$x/node_modules" ]]; then note ok npm "$x node_modules"; else note avert npm "$x node_modules" absent; fi
   done < <(m '.npm.ci[]')
   x="$(m .racine.kit)"
-  if [[ -f "$RACINE/$x" ]]; then note ok racine "$x" 'kit détaillé présent'; else note info racine "$x" 'absent (hors Git) : le guide ouvre README.md'; fi
+  if [[ -f "$RACINE/$x" ]]; then note ok racine "$x" 'kit détaillé présent'; else note info racine "$x" "absent : cloner hq ($(m .racine.kit_source)), sinon le guide ouvre README.md"; fi
 
   titre 'VS Code et Claude Code'
   if (( ${#CODE[@]} == 0 )); then note avert vscode code absent "$(conseil_code)"

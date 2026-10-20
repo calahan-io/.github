@@ -69,13 +69,14 @@
     ]
   },
   "racine": {
-    "$comment": "Fichiers posés à la racine de l'atelier depuis poste/modeles (copie ; un fichier modifié à la main est sauvegardé en .bak avant remplacement).",
+    "$comment": "Fichiers posés à la racine de l'atelier depuis poste/modeles (copie ; un fichier modifié à la main est sauvegardé en .bak avant remplacement). Le kit détaillé (kit_source, dans hq, privé) est copié de même vers kit dès que hq est cloné.",
     "fichiers": [
       { "source": "modeles/aegis.code-workspace", "cible": "aegis.code-workspace" },
       { "source": "modeles/LISEZMOI.md", "cible": "README.md" },
       { "source": "modeles/launch.json", "cible": ".claude/launch.json" }
     ],
-    "kit": "readme.html"
+    "kit": "readme.html",
+    "kit_source": "hq/scripts/poste/readme.html"
   },
   "ports": [7400, 7480]
 }

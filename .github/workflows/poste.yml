@@ -67,3 +67,5 @@ jobs:
           $j = pwsh -NoProfile -File poste/aegis.ps1 doctor --json --racine "$env:RUNNER_TEMP\aegis" | ConvertFrom-Json
           $j | Format-Table statut, groupe, nom, detail -AutoSize | Out-String -Width 200
           if (-not ($j | Where-Object nom -eq 'Git')) { throw 'doctor ne rend pas l''état des outils' }
+          # doctor sort en 1 ici (pas de clones sur l'exécuteur) : seule la validité du JSON est jugée.
+          exit 0

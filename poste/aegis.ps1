@@ -247,11 +247,17 @@ function Ecrire-Empreintes($h) {
   [IO.File]::WriteAllLines((Join-Path $Etat 'empreintes'), [string[]]$lignes)
 }
 function Empreinte($f) { (Get-FileHash -Algorithm SHA256 -LiteralPath $f).Hash.ToLowerInvariant() }
+function Fichiers-Racine {
+  foreach ($f in $Manifeste.racine.fichiers) { [pscustomobject]@{ src = (Join-Path $Ici $f.source); cible = $f.cible } }
+  # Le kit détaillé vit dans hq (privé) : copié à la racine dès que hq est cloné.
+  $kit = Join-Path $Racine $Manifeste.racine.kit_source
+  if (Test-Path $kit) { [pscustomobject]@{ src = $kit; cible = $Manifeste.racine.kit } }
+}
 function Install-Racine {
   Titre 'Racine de l''atelier'
   $emp = Lire-Empreintes
-  foreach ($f in $Manifeste.racine.fichiers) {
-    $src = Join-Path $Ici $f.source; $dst = Join-Path $Racine $f.cible
+  foreach ($f in Fichiers-Racine) {
+    $src = $f.src; $dst = Join-Path $Racine $f.cible
     $hs = Empreinte $src
     if (Test-Path $dst) {
       $hd = Empreinte $dst
@@ -421,10 +427,10 @@ function Doctor {
   }
 
   Titre 'Racine'
-  foreach ($f in $Manifeste.racine.fichiers) {
+  foreach ($f in Fichiers-Racine) {
     $dst = Join-Path $Racine $f.cible
     if (-not (Test-Path $dst)) { Note avert racine $f.cible 'absent' 'aegis.ps1 update'; continue }
-    if ((Empreinte $dst) -eq (Empreinte (Join-Path $Ici $f.source))) { Note ok racine $f.cible 'à jour' } else { Note avert racine $f.cible 'diffère du modèle' 'aegis.ps1 update (sauvegarde .bak si modifié à la main)' }
+    if ((Empreinte $dst) -eq (Empreinte $f.src)) { Note ok racine $f.cible 'à jour' } else { Note avert racine $f.cible 'diffère du modèle' 'aegis.ps1 update (sauvegarde .bak si modifié à la main)' }
   }
   Note ($(if (Test-Path (Join-Path $Racine 'package.json')) { 'ok' } else { 'avert' })) npm 'package.json d''atelier' ''
   Note ($(if (Test-Path (Join-Path $Racine 'node_modules')) { 'ok' } else { 'avert' })) npm 'node_modules d''atelier' ''
@@ -433,7 +439,7 @@ function Doctor {
     Note ($(if ($dist) { 'ok' } else { 'avert' })) npm "$d construit" "$dist paquet(s) avec dist/" $(if (-not $dist) { 'aegis.ps1 install --seulement npm' } else { '' })
   }
   foreach ($d in $Manifeste.npm.ci) { Note ($(if (Test-Path (Join-Path $Racine "$d/node_modules")) { 'ok' } else { 'avert' })) npm "$d node_modules" '' }
-  Note ($(if (Test-Path (Join-Path $Racine $Manifeste.racine.kit)) { 'ok' } else { 'info' })) racine $Manifeste.racine.kit $(if (Test-Path (Join-Path $Racine $Manifeste.racine.kit)) { 'kit détaillé présent' } else { 'absent (hors Git) : le guide ouvre README.md' })
+  Note ($(if (Test-Path (Join-Path $Racine $Manifeste.racine.kit)) { 'ok' } else { 'info' })) racine $Manifeste.racine.kit $(if (Test-Path (Join-Path $Racine $Manifeste.racine.kit)) { 'kit détaillé présent' } else { "absent : cloner hq ($($Manifeste.racine.kit_source)), sinon le guide ouvre README.md" })
 
   Titre 'VS Code et Claude Code'
   $manq = Extensions-Manquantes

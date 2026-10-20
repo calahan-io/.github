@@ -28,7 +28,7 @@ AEGIS-CORP/
 ├── aegis.code-workspace                                        # espace de travail VS Code
 ├── package.json  node_modules/                                 # atelier npm : syn + heimdall sans registre
 ├── .claude/launch.json                                         # aperçus Claude Code
-├── readme.html                                                 # kit de démarrage détaillé (hors Git, s'il existe)
+├── readme.html                                                 # kit de démarrage détaillé, copié depuis hq/scripts/poste/
 └── README.md                                                   # ce fichier
 ```
 
